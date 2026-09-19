@@ -1,0 +1,84 @@
+/* ==========================================================================
+   RESPONSIVE LAYOUT OPTIMIZATIONS (TABLETS & MOBILES)
+   ========================================================================== */
+
+@media (max-width: 1024px) {
+    .charts-grid-main {
+        grid-template-columns: 1fr;
+    }
+    
+    .sidebar {
+        width: 80px;
+    }
+    
+    .brand-info, .nav-item span:not(.icon), .user-meta, .nav-badge {
+        display: none;
+    }
+    
+    .nav-item {
+        justify-content: center;
+        padding: 14px;
+    }
+    
+    .sidebar-footer {
+        justify-content: center;
+        padding: 12px;
+    }
+}
+
+@media (max-width: 768px) {
+    #app-container {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 100vw;
+        height: auto;
+        flex-direction: row;
+        border-right: none;
+        border-bottom: 1px solid var(--border-card);
+        padding: 10px 16px;
+    }
+
+    .brand-section {
+        border-bottom: none;
+        padding: 0;
+    }
+
+    .nav-menu {
+        flex-direction: row;
+        padding: 0;
+        gap: 8px;
+        overflow-x: auto;
+    }
+
+    .sidebar-footer {
+        display: none;
+    }
+
+    .topbar {
+        padding: 0 16px;
+    }
+
+    .content-area {
+        padding: 16px;
+    }
+
+    .kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .phase-gauge-array {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .kpi-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .topbar-actions .live-indicator {
+        display: none;
+    }
+}

@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Energy Monitoring System | Industrial EMS & ML Anomaly Detection</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link rel="stylesheet" href="/static/css/responsive.css">
+</head>
+<body>
+    <div id="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="brand-section">
+                <div class="brand-icon">⚡</div>
+                <div class="brand-info">
+                    <h2>Smart Energy</h2>
+                    <span>Industrial EMS</span>
+                </div>
+            </div>
+
+            <ul class="nav-menu">
+                <li class="nav-item active" data-view="live-monitor">
+                    <span class="icon">📊</span>
+                    <span>Live Monitor</span>
+                </li>
+                <li class="nav-item" data-view="analytics">
+                    <span class="icon">📈</span>
+                    <span>Energy Analytics</span>
+                </li>
+                <li class="nav-item" data-view="anomalies">
+                    <span class="icon">🚨</span>
+                    <span>ML Anomalies</span>
+                    <span class="nav-badge" id="sidebar-anomaly-count">0</span>
+                </li>
+                <li class="nav-item" data-view="simulator">
+                    <span class="icon">⚙️</span>
+                    <span>IoT Simulator</span>
+                </li>
+                <li class="nav-item" data-view="reports">
+                    <span class="icon">📄</span>
+                    <span>Audit Reports</span>
+                </li>
+                <li class="nav-item" data-view="java-compliance">
+                    <span class="icon">☕</span>
+                    <span>Java ISO 50001</span>
+                </li>
+            </ul>
+
+            <div class="sidebar-footer">
+                <div class="user-avatar">AD</div>
+                <div class="user-meta">
+                    <div class="user-name">Aditya Mohite</div>
+                    <div class="user-role">Energy Director</div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-wrapper">
+            <!-- Topbar -->
+            <header class="topbar">
+                <div class="page-title">
+                    <h1 id="page-heading">Live Energy Monitor</h1>
+                    <p id="page-subheading">Real-time industrial 3-phase telemetry streaming</p>
+                </div>
+
+                <div class="topbar-actions">
+                    <div class="live-indicator" id="ws-status-indicator">
+                        <span class="pulse-dot"></span>
+                        <span id="ws-status-text">LIVE TELEMETRY STREAMING</span>
+                    </div>
+
+                    <button class="btn btn-outline" onclick="openReportModal()">
+                        <span>📄 Generate Audit</span>
+                    </button>
+                    <button class="btn btn-primary" onclick="switchView('simulator')">
+                        <span>⚡ Fault Simulator</span>
+                    </button>
+                </div>
+            </header>
+
+            <div class="content-area">
+                <!-- ================= VIEW 1: LIVE MONITOR ================= -->
+                <section id="view-live-monitor" class="view-section active">
+                    <!-- KPI Cards -->
+                    <div class="kpi-grid">
+                        <div class="card">
+                            <div class="card-top">
+                                <span class="card-title">Active Power Demand</span>
+                                <div class="card-icon icon-cyan">⚡</div>
+                            </div>
+                            <div class="card-value" id="kpi-active-power">-- <span class="card-unit">kW</span></div>
+                            <div class="card-footer-meta">
+                                <span class="badge-trend-up">● Nominal</span> 3-Phase Grid Load
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-top">
+                                <span class="card-title">Today's Consumption</span>
+                                <div class="card-icon icon-emerald">🔋</div>
+                            </div>
+                            <div class="card-value" id="kpi-today-energy">-- <span class="card-unit">kWh</span></div>
+                            <div class="card-footer-meta">
+                                <span>Est. Cost:</span> <strong id="kpi-today-cost" style="color:var(--text-primary);">$0.00</strong>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-top">
+                                <span class="card-title">Average Power Factor</span>
+                                <div class="card-icon icon-amber">⚙️</div>
+                            </div>
+                            <div class="card-value" id="kpi-power-factor">--</div>
+                            <div class="card-footer-meta" id="kpi-pf-status">
+                                <span class="badge-trend-down">Target ≥ 0.90</span>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-top">
+                                <span class="card-title">Grid Frequency</span>
+                                <div class="card-icon icon-purple">🌐</div>
+                            </div>
+                            <div class="card-value" id="kpi-frequency">50.00 <span class="card-unit">Hz</span></div>
+                            <div class="card-footer-meta">
+                                <span class="badge-trend-down">Synchronized</span> 50 Hz Nominal
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Main Charts Row -->
+                    <div class="charts-grid-main">
+                        <div class="card">
+                            <div class="chart-header">
+                                <div>
+                                    <h3>Real-Time Total Active Power (kW)</h3>
+                                    <p style="font-size:12px; color:var(--text-muted);">Rolling 60-second telemetry feed across all connected factory bays</p>
+                                </div>
+                                <div class="live-indicator" style="padding: 4px 10px; font-size: 11px;">
+                                    <span class="pulse-dot"></span> Live 2s
+                                </div>
+                            </div>
+                            <div class="chart-canvas-container">
+                                <canvas id="realtimePowerChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="chart-header">
+                                <h3>3-Phase Voltage & Balance</h3>
+                            </div>
+                            <div class="phase-gauge-array">
+                                <div class="phase-card">
+                                    <div class="phase-title" style="color:#f43f5e;">PHASE L1</div>
+                                    <div class="phase-val" id="val-phase-l1">230.1 V</div>
+                                    <div class="phase-sub" id="amp-phase-l1">45.2 A</div>
+                                </div>
+                                <div class="phase-card">
+                                    <div class="phase-title" style="color:#38bdf8;">PHASE L2</div>
+                                    <div class="phase-val" id="val-phase-l2">229.8 V</div>
+                                    <div class="phase-sub" id="amp-phase-l2">44.9 A</div>
+                                </div>
+                                <div class="phase-card">
+                                    <div class="phase-title" style="color:#10b981;">PHASE L3</div>
+                                    <div class="phase-val" id="val-phase-l3">230.4 V</div>
+                                    <div class="phase-sub" id="amp-phase-l3">45.5 A</div>
+                                </div>
+                            </div>
+
+                            <div style="margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border-card);">
+                                <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px;">
+                                    <span style="color:var(--text-muted);">Current Phase Imbalance</span>
+                                    <strong id="val-imbalance-pct" style="color:var(--accent-emerald);">1.4% (Safe)</strong>
+                                </div>
+                                <div style="background:rgba(255,255,255,0.05); height:6px; border-radius:3px; overflow:hidden;">
+                                    <div id="bar-imbalance" style="background:var(--accent-emerald); height:100%; width:14%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Substation Fleet Overview -->
+                    <div class="card">
+                        <div class="chart-header">
+                            <div>
+                                <h3>IoT Meter Fleet & Production Bays</h3>
+                                <p style="font-size:12px; color:var(--text-muted);">Live status of connected ESP32 sensor nodes</p>
+                            </div>
+                        </div>
+                        <div class="device-fleet-grid" id="live-device-fleet-grid">
+                            <!-- Populated via JS -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ================= VIEW 2: ANALYTICS & TRENDS ================= -->
+                <section id="view-analytics" class="view-section">
+                    <div class="card" style="margin-bottom: 24px;">
+                        <div class="chart-header">
+                            <div>
+                                <h3>Historical Electricity Consumption & Cost Analysis</h3>
+                                <p style="font-size:12px; color:var(--text-muted);">Energy consumption trends aggregated across industrial shifts</p>
+                            </div>
+                            <div class="chart-filters">
+                                <button class="filter-btn active" onclick="loadTrendChart('today', this)">Today</button>
+                                <button class="filter-btn" onclick="loadTrendChart('week', this)">This Week</button>
+                                <button class="filter-btn" onclick="loadTrendChart('month', this)">This Month</button>
+                            </div>
+                        </div>
+                        <div class="chart-canvas-container" style="height: 340px;">
+                            <canvas id="historicalTrendChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="charts-grid-main">
+                        <div class="card">
+                            <div class="chart-header">
+                                <h3>Substation Load Share Breakdown</h3>
+                            </div>
+                            <div class="chart-canvas-container" style="height: 260px;">
+                                <canvas id="loadShareDonutChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="chart-header">
+                                <h3>Industrial Tariff & Billing Matrix</h3>
+                            </div>
+                            <div style="font-size: 13px; line-height: 1.8; color: var(--text-secondary);">
+                                <div style="display:flex; justify-content:space-between; border-bottom:1px solid var(--border-card); padding:8px 0;">
+                                    <span>Peak Rate (08:00 - 20:00)</span>
+                                    <strong style="color:var(--accent-amber);">$0.18 / kWh</strong>
+                                </div>
+                                <div style="display:flex; justify-content:space-between; border-bottom:1px solid var(--border-card); padding:8px 0;">
+                                    <span>Off-Peak Rate (20:00 - 08:00)</span>
+                                    <strong style="color:var(--accent-emerald);">$0.08 / kWh</strong>
+                                </div>
+                                <div style="display:flex; justify-content:space-between; border-bottom:1px solid var(--border-card); padding:8px 0;">
+                                    <span>Max Demand Charge</span>
+                                    <strong style="color:var(--accent-cyan);">$12.50 / kW</strong>
+                                </div>
+                                <div style="display:flex; justify-content:space-between; padding:8px 0;">
+                                    <span>Grid Carbon Factor</span>
+                                    <strong style="color:var(--accent-purple);">0.42 kg CO2e / kWh</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ================= VIEW 3: ML ANOMALIES ================= -->
+                <section id="view-anomalies" class="view-section">
+                    <div class="kpi-grid">
+                        <div class="card">
+                            <div class="card-top">
+                                <span class="card-title">Total Flagged Anomalies</span>
+                                <div class="card-icon icon-rose">🚨</div>
+                            </div>
+                            <div class="card-value" id="stats-total-anomalies">0</div>
+                            <div class="card-footer-meta">All-time ML event log</div>
+                        </div>
+                        <div class="card">
+                            <div class="card-top">
+                                <span class="card-title">Unresolved Active Alerts</span>
+                                <div class="card-icon icon-amber">⚠️</div>
+                            </div>
+                            <div class="card-value" id="stats-unresolved-anomalies">0</div>
+                            <div class="card-footer-meta">Requires operator inspection</div>
+                        </div>
+                        <div class="card">
+                            <div class="card-top">
+                                <span class="card-title">ML Algorithm</span>
+                                <div class="card-icon icon-cyan">🧠</div>
+                            </div>
+                            <div class="card-value" style="font-size: 20px;">Isolation Forest</div>
+                            <div class="card-footer-meta">Multi-variate clustering</div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="chart-header">
+                            <div>
+                                <h3>Machine Learning Anomaly Detection Feed</h3>
+                                <p style="font-size:12px; color:var(--text-muted);">Real-time root cause analysis and electrical anomaly events</p>
+                            </div>
+                            <button class="btn btn-outline" onclick="loadAnomalies()">
+                                <span>🔄 Refresh Log</span>
+                            </button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table-custom">
+                                <thead>
+                                    <tr>
+                                        <th>Timestamp</th>
+                                        <th>Device / Line</th>
+                                        <th>Anomaly Type</th>
+                                        <th>Severity</th>
+                                        <th>Confidence</th>
+                                        <th>Diagnostic Description</th>
+                                        <th>Status / Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="anomalies-table-body">
+                                    <!-- Populated via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ================= VIEW 4: IOT FLEET & SIMULATOR ================= -->
+                <section id="view-simulator" class="view-section">
+                    <div class="card" style="margin-bottom: 24px;">
+                        <div class="chart-header">
+                            <div>
+                                <h3>Industrial IoT Hardware Telemetry & Fault Injection Board</h3>
+                                <p style="font-size:12px; color:var(--text-muted);">Simulate real-world industrial electrical anomalies and test ML anomaly response in real time</p>
+                            </div>
+                            <button class="btn btn-danger" onclick="resetAllFaults()">
+                                <span>🔄 Reset All to Normal</span>
+                            </button>
+                        </div>
+
+                        <div class="injector-grid">
+                            <!-- Transformer TX01 -->
+                            <div class="injector-box">
+                                <div style="display:flex; justify-content:space-between; align-items:center;">
+                                    <strong>Main Transformer (ESP32-TX01)</strong>
+                                    <span class="status-badge status-online">Substation 1</span>
+                                </div>
+                                <p style="font-size:12px; color:var(--text-muted); margin-top:4px;">Main incoming 400V 500A power feed</p>
+                                
+                                <div class="fault-btn-grid">
+                                    <button class="fault-trigger-btn" onclick="injectFault('ESP32-TX01', 'voltage_sag')">
+                                        ⚡ Voltage Sag
+                                        <span>Drop to 185V</span>
+                                    </button>
+                                    <button class="fault-trigger-btn" onclick="injectFault('ESP32-TX01', 'overcurrent')">
+                                        💥 Grid Surge
+                                        <span>+50% Inrush Load</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Press 02 -->
+                            <div class="injector-box">
+                                <div style="display:flex; justify-content:space-between; align-items:center;">
+                                    <strong>Heavy Stamping Press #2 (ESP32-PRESS-02)</strong>
+                                    <span class="status-badge status-warning">Metal Shop</span>
+                                </div>
+                                <p style="font-size:12px; color:var(--text-muted); margin-top:4px;">High-inertia hydraulic metal press</p>
+                                
+                                <div class="fault-btn-grid">
+                                    <button class="fault-trigger-btn" onclick="injectFault('ESP32-PRESS-02', 'low_power_factor')">
+                                        ⚙️ Low Power Factor
+                                        <span>Capacitor Failure PF 0.65</span>
+                                    </button>
+                                    <button class="fault-trigger-btn" onclick="injectFault('ESP32-PRESS-02', 'phase_loss')">
+                                        🔌 Phase 2 Blown Fuse
+                                        <span>Zero current on L2</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- HVAC Unit -->
+                            <div class="injector-box">
+                                <div style="display:flex; justify-content:space-between; align-items:center;">
+                                    <strong>Industrial Chiller & HVAC (ESP32-HVAC-01)</strong>
+                                    <span class="status-badge status-online">Utility Roof</span>
+                                </div>
+                                <p style="font-size:12px; color:var(--text-muted); margin-top:4px;">Centrifugal compressor chiller</p>
+                                
+                                <div class="fault-btn-grid">
+                                    <button class="fault-trigger-btn" onclick="injectFault('ESP32-HVAC-01', 'high_temp')">
+                                        🔥 Thermal Overheat
+                                        <span>Condenser 88°C</span>
+                                    </button>
+                                    <button class="fault-trigger-btn" onclick="injectFault('ESP32-HVAC-01', 'vampire_load')">
+                                        🌙 Vampire Idle Drain
+                                        <span>Unscheduled Night Run</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Robot Assembly Line -->
+                            <div class="injector-box">
+                                <div style="display:flex; justify-content:space-between; align-items:center;">
+                                    <strong>Assembly Line Array (ESP32-LINE-A)</strong>
+                                    <span class="status-badge status-online">Production Bay 1</span>
+                                </div>
+                                <p style="font-size:12px; color:var(--text-muted); margin-top:4px;">Robotic welding and assembly line</p>
+                                
+                                <div class="fault-btn-grid">
+                                    <button class="fault-trigger-btn" onclick="injectFault('ESP32-LINE-A', 'overcurrent')">
+                                        🤖 Robotic Inrush
+                                        <span>Spike Current 180A</span>
+                                    </button>
+                                    <button class="fault-trigger-btn" onclick="injectFault('ESP32-LINE-A', 'normal')">
+                                        ✅ Restore Normal
+                                        <span>Reset nominal parameters</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ================= VIEW 5: AUDIT REPORTS ================= -->
+                <section id="view-reports" class="view-section">
+                    <div class="card">
+                        <div class="chart-header">
+                            <div>
+                                <h3>Automated Energy Audit Reports</h3>
+                                <p style="font-size:12px; color:var(--text-muted);">Historical compliance certificates, carbon footprint calculations, and cost-saving ECMs</p>
+                            </div>
+                            <button class="btn btn-primary" onclick="openReportModal()">
+                                <span>➕ Generate New Audit</span>
+                            </button>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table-custom">
+                                <thead>
+                                    <tr>
+                                        <th>Report UID</th>
+                                        <th>Title & Period</th>
+                                        <th>Total Energy</th>
+                                        <th>Peak Demand</th>
+                                        <th>Total Cost</th>
+                                        <th>Carbon (CO2e)</th>
+                                        <th>Grade</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="reports-table-body">
+                                    <!-- Populated via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ================= VIEW 6: JAVA ISO 50001 ENGINE ================= -->
+                <section id="view-java-compliance" class="view-section">
+                    <div class="card" style="margin-bottom: 24px;">
+                        <div class="chart-header">
+                            <div>
+                                <h3>Enterprise Java ISO 50001 Energy Performance Engine</h3>
+                                <p style="font-size:12px; color:var(--text-muted);">Connected Java Microservice (Port 8081) for Energy Performance Indicators (EnPI) & Tariff Verification</p>
+                            </div>
+                            <button class="btn btn-outline" onclick="queryJavaCompliance()">
+                                <span>⚡ Execute Java EnPI Audit</span>
+                            </button>
+                        </div>
+
+                        <div id="java-compliance-result-container" style="display:none; margin-top:20px;">
+                            <div class="kpi-grid">
+                                <div class="card">
+                                    <div class="card-top">
+                                        <span class="card-title">ISO 50001 Grade</span>
+                                        <div class="card-icon icon-emerald">🏅</div>
+                                    </div>
+                                    <div class="card-value" id="java-grade" style="color:var(--accent-emerald);">--</div>
+                                    <div class="card-footer-meta">Standard Compliance</div>
+                                </div>
+
+                                <div class="card">
+                                    <div class="card-top">
+                                        <span class="card-title">Plant Load Factor</span>
+                                        <div class="card-icon icon-cyan">📊</div>
+                                    </div>
+                                    <div class="card-value" id="java-load-factor">-- <span class="card-unit">%</span></div>
+                                    <div class="card-footer-meta">Efficiency Rating</div>
+                                </div>
+
+                                <div class="card">
+                                    <div class="card-top">
+                                        <span class="card-title">Carbon Footprint</span>
+                                        <div class="card-icon icon-purple">🌱</div>
+                                    </div>
+                                    <div class="card-value" id="java-carbon">-- <span class="card-unit">kg CO2e</span></div>
+                                    <div class="card-footer-meta">GHG Protocol Standard</div>
+                                </div>
+                            </div>
+
+                            <div class="card">
+                                <h4 style="margin-bottom:12px; font-size:14px; color:var(--accent-cyan);">Java Microservice Raw JSON Payload:</h4>
+                                <pre id="java-raw-json" style="background:rgba(0,0,0,0.5); padding:16px; border-radius:8px; font-family:monospace; font-size:12px; color:#38bdf8; overflow-x:auto;"></pre>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal: Generate Audit Report -->
+    <div class="modal-overlay" id="reportModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 style="font-size:18px;">Generate Industrial Energy Audit</h3>
+                <button class="close-modal-btn" onclick="closeReportModal()">✕</button>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:16px;">
+                <div>
+                    <label style="display:block; font-size:12px; color:var(--text-secondary); margin-bottom:6px;">Audit Period Type</label>
+                    <select id="modal-report-period" style="width:100%; padding:10px; border-radius:8px; background:rgba(0,0,0,0.3); border:1px solid var(--border-card); color:#fff;">
+                        <option value="daily">Daily Audit (Last 24 Hours)</option>
+                        <option value="weekly">Weekly Efficiency Audit (Last 7 Days)</option>
+                        <option value="monthly">Monthly Plant Audit (Last 30 Days)</option>
+                    </select>
+                </div>
+                <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:10px;">
+                    <button class="btn btn-outline" onclick="closeReportModal()">Cancel</button>
+                    <button class="btn btn-primary" onclick="submitGenerateReport()">Generate & View</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Resolve Anomaly -->
+    <div class="modal-overlay" id="resolveModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 style="font-size:18px;">Acknowledge & Resolve Anomaly Alert</h3>
+                <button class="close-modal-btn" onclick="closeResolveModal()">✕</button>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:16px;">
+                <input type="hidden" id="resolve-anomaly-id">
+                <p id="resolve-anomaly-desc" style="font-size:13px; color:var(--text-secondary);"></p>
+                <div>
+                    <label style="display:block; font-size:12px; color:var(--text-secondary); margin-bottom:6px;">Corrective Action Taken</label>
+                    <textarea id="resolve-action-text" rows="3" placeholder="e.g. Replaced blown Phase 2 fuse, re-engaged APFC capacitor bank..." style="width:100%; padding:10px; border-radius:8px; background:rgba(0,0,0,0.3); border:1px solid var(--border-card); color:#fff; font-size:13px;"></textarea>
+                </div>
+                <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:10px;">
+                    <button class="btn btn-outline" onclick="closeResolveModal()">Cancel</button>
+                    <button class="btn btn-primary" onclick="submitResolveAnomaly()">Confirm Resolution</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application JavaScript Modules -->
+    <script src="/static/js/charts.js"></script>
+    <script src="/static/js/live_feed.js"></script>
+    <script src="/static/js/simulator_ui.js"></script>
+    <script src="/static/js/anomaly_view.js"></script>
+    <script src="/static/js/reports_view.js"></script>
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

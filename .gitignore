@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+
+# Java
+java_service/bin/
+*.class
+*.jar
+*.war
+.idea/
+*.iml
+.gradle/
+build/
+target/
+
+# System & OS
+.DS_Store
+Thumbs.db
+*.log
+
+# IDE
+.vscode/
+.antigravity/
+.gemini/
