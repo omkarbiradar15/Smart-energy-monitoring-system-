@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: smart-energy-monitoring-system
+    env: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: PORT
+        value: 8000
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        value: sqlite:////app/database/energy_monitor.db
+    autoDeploy: true
